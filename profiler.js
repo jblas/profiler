@@ -26,7 +26,23 @@
 
 (function(){
 
-var nextProfilerFuncId = 1;
+var nextProfilerFuncId = 1,
+	funcPropExceptions = {
+		// Native Props
+		arguments:    true,
+		arity:        true,
+		caller:       true,
+		constructor:  true,
+		length:       true,
+		name:         true,
+		apply:        true,
+		bind:         true,
+		call:         true,
+		// ProfilerProps
+		_funcRef:     true,
+		_profileData: true,
+		_funcId:      true
+	};
 
 function ProfileTimer()
 {
@@ -61,13 +77,14 @@ ProfileTimer.prototype = {
 // ProfileData stores all of the call data for
 // a specific function/method.
 
-function ProfileData()
+function ProfileData(label)
 {
 	this.stack = [];
 	this.calls = [];
 	this.callCount = 0;
 	this.totalTime = 0;
 	this.disabled = false;
+	this.label = label || "anonymous";
 }
 
 ProfileData.prototype = {
@@ -125,10 +142,10 @@ function Profiler()
 Profiler.prototype = {
 	constructor: Profiler,
 
-	wrapFunction: function(funcRef)
+	wrapFunction: function(funcRef, label)
 	{
 		var self = this,
-			pd = new ProfileData(),
+			pd = new ProfileData(label),
 			pf = function(){
 				var args = arguments;
 					enabled = !self.disabled;
@@ -143,6 +160,19 @@ Profiler.prototype = {
 				}
 				return rv;
 			};
+
+		// The goal here is to make the instrumented function
+		// look just like the original function, including any
+		// properties that may be hanging off of it. This allows
+		// us to instrument constructors as well as functions
+		// that are used as namespaces for other functionality.
+
+		for (var prop in funcRef){
+			if (!funcPropExceptions[prop]){
+				pf[prop] = funcRef[prop];
+			}
+		}
+
 		pf.prototype = funcRef.prototype;
 		pf._funcRef = funcRef;
 		pf._profileData = pd;
@@ -161,8 +191,7 @@ Profiler.prototype = {
 			funcLabel = funcLabel || funcName;
 			var funcRef = obj[funcName];
 			if (typeof funcRef === "function"){
-				pf = this.wrapFunction(funcRef);
-				pf._profileData._label = funcLabel;
+				pf = this.wrapFunction(funcRef, funcLabel);
 				obj[funcName] = pf;
 			}
 		}
@@ -171,8 +200,11 @@ Profiler.prototype = {
 
 	wrapObjectMethods: function(obj, objLabel)
 	{
+		var isFunc = typeof obj === "function";
 		for (var k in obj){
-			this.wrapObjectMethod(obj, k, objLabel + k);
+			if (!isFunc || !funcPropExceptions[k]){
+				this.wrapObjectMethod(obj, k, objLabel + k);
+			}
 		}
 	},
 
