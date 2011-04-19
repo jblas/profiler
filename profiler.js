@@ -155,11 +155,11 @@ Profiler.prototype = {
 			pf = function(){
 				var enabled = !self.disabled && !pi.disabled;
 				if (enabled){
-					self._functionStart(pi, arguments);
+					self._startFunction(pi, arguments);
 				}
 				var rv = funcRef.apply(this, arguments);
 				if (enabled){
-					self._functionStop(pi, arguments, rv);
+					self._stopFunction(pi, arguments, rv);
 				}
 				return rv;
 			};
@@ -210,6 +210,24 @@ Profiler.prototype = {
 		}
 	},
 
+	startProfile: function(label)
+	{
+		// XXX: Add observer hook.
+		var pi = this._getSectionProfileItem(label, true);
+		if (pi){
+			this._startCall(pi);
+		}
+	},
+
+	stopProfile: function(label)
+	{
+		// XXX: Add observer hook.
+		var pi = this._getSectionProfileItem(label);
+		if (pi){
+			this._stopCall(pi);
+		}
+	},
+
 	enable: function(id)
 	{
 		if (id){
@@ -246,7 +264,7 @@ Profiler.prototype = {
 		this.callStack.length = 0;
 	},
 
-	getSectionProfileItem: function(label, canCreate)
+	_getSectionProfileItem: function(label, canCreate)
 	{
 		var id = this.sectionMap[label],
 			pi = id ? this.profileItemDict[id] : null;
@@ -280,34 +298,16 @@ Profiler.prototype = {
 		this.callStack.pop();
 	},
 
-	_functionStart: function(pi, args)
+	_startFunction: function(pi, args)
 	{
 		// XXX: Add observer hook.
 		this._startCall(pi);
 	},
 
-	_functionStop: function(pi, args, rv)
+	_stopFunction: function(pi, args, rv)
 	{
 		// XXX: Add observer hook.
 		this._stopCall(pi);
-	},
-
-	startProfile: function(label)
-	{
-		// XXX: Add observer hook.
-		var pi = this.getSectionProfileItem(label, true);
-		if (pi){
-			this._startCall(pi);
-		}
-	},
-
-	stopProfile: function(label)
-	{
-		// XXX: Add observer hook.
-		var pi = this.getSectionProfileItem(label);
-		if (pi){
-			this._stopCall(pi);
-		}
 	}
 };
 
