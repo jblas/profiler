@@ -26,9 +26,8 @@
 
 (function(){
 
-var nextProfilerFuncId = 1,
+var nextProfileItemId = 1,
 	funcPropExceptions = {
-		// Native Props
 		arguments:    true,
 		arity:        true,
 		caller:       true,
@@ -38,31 +37,31 @@ var nextProfilerFuncId = 1,
 		apply:        true,
 		bind:         true,
 		call:         true,
-		// ProfilerProps
-		_funcRef:     true,
-		_profileData: true,
-		_funcId:      true
 	};
 
-function ProfileTimer()
+function CallInstance(profileItem)
 {
-	this.startTime = 0;
-	this.stopTime = 0;
-	this.duration;
+	this.startTime =     0;
+	this.stopTime =      0;
+	this.duration =      0;
+	this.profileItem =   profileItem;
+	this.callNumber =    0;
+	this.parent =        null;
+	this.children =      null;
 }
 
-// ProfileTimer object stores the data
+// CallInstance object stores the data
 // for a unique call to a profiled function/method.
 
-ProfileTimer.prototype = {
-	constructor: ProfileTimer,
-	start: function()
+CallInstance.prototype = {
+	constructor: CallInstance,
+	startTimer: function()
 	{
 		this.startTime = this.stopTime = this.currentTime();
 		this.duration = 0;
 	},
 
-	stop: function()
+	stopTimer: function()
 	{
 		this.stopTime = this.currentTime();
 		this.duration = this.stopTime - this.startTime;
@@ -71,60 +70,66 @@ ProfileTimer.prototype = {
 	currentTime: function()
 	{
 		return (new Date()).getTime();
+	},
+	
+	addChild: function(child)
+	{
+		if (child){
+			if (!this.children){
+				this.children = [];
+			}
+			child.parent = this;
+			this.children.push(child);
+		}
 	}
 };
 
-// ProfileData stores all of the call data for
+// ProfileItem stores all of the call data for
 // a specific function/method.
 
-function ProfileData(label)
+function ProfileItem(label)
 {
 	this.stack = [];
 	this.calls = [];
-	this.callCount = 0;
-	this.totalTime = 0;
+	this.count = this.total = this.min = this.max = 0;
 	this.disabled = false;
 	this.label = label || "anonymous";
+	this.id = nextProfileItemId++;
 }
 
-ProfileData.prototype = {
-	constructor: ProfileData,
+ProfileItem.prototype = {
+	constructor: ProfileItem,
 
 	start: function()
 	{
-		if (this.isEnabled()){
-			var t = new ProfileTimer();
-			++this.callCount;
-			this.stack.push(t);
-			this.calls.push(t);
-			t.start();
-		}
+		var ci = new CallInstance(this);
+		this.stack.push(ci);
+		this.calls.push(ci);
+		++this.count;
+
+		ci.startTimer();
+
+		return ci;
 	},
 
 	stop: function()
 	{
-		if (this.isEnabled()){
-			var t = this.stack.pop();
-			if (t){
-				t.stop();
-				this.totalTime += t.duration;
-			}
-		}
+		var ci = this.stack.pop();
+
+		ci.stopTimer();
+
+		var duration = ci.duration;
+		this.total += duration;
+		this.min = Math.min(this.min, duration);
+		this.max = Math.max(this.max, duration);
+
+		return ci;
 	},
 
-	enable: function(){ this.disabled = false; },
-	disable: function(){ this.disabled = true; },
-	isEnabled: function() { return !this.disabled; },
 	clear: function() {
-		this.stack.length = 0;
-		this.calls.length = 0;
-		this.callCount = 0;
-		this.totalTime = 0;
-	},
-
-	currentTime: function()
-	{
-		return (new Date()).getTime();
+		this.stack.length;
+		this.calls.length;
+		this.count = this.total = this.min = this.max = 0;
 	}
 };
 
@@ -133,7 +138,8 @@ ProfileData.prototype = {
 
 function Profiler()
 {
-	this.funcDict = {};
+	this.sectionMap = {};
+	this.profileItemDict = {};
 	this.callBranches = [];
 	this.callStack = [];
 	this.disabled = false;
@@ -142,21 +148,18 @@ function Profiler()
 Profiler.prototype = {
 	constructor: Profiler,
 
-	wrapFunction: function(funcRef, label)
+	instrumentFunction: function(funcRef, label)
 	{
 		var self = this,
-			pd = new ProfileData(label),
+			pi = new ProfileItem(label),
 			pf = function(){
-				var args = arguments;
-					enabled = !self.disabled;
+				var enabled = !self.disabled && !pi.disabled;
 				if (enabled){
-					pd.start();
-					self.handleStart(pf, pd, args);
+					self._functionStart(pi, arguments);
 				}
-				var rv = funcRef.apply(this, args);
+				var rv = funcRef.apply(this, arguments);
 				if (enabled){
-					pd.stop();
-					self.handleStop(pf, pd, args, rv);
+					self._functionStop(pi, arguments, rv);
 				}
 				return rv;
 			};
@@ -174,16 +177,15 @@ Profiler.prototype = {
 		}
 
 		pf.prototype = funcRef.prototype;
-		pf._funcRef = funcRef;
-		pf._profileData = pd;
-		pf._funcId = nextProfilerFuncId++;
+		pi.oFunc = funcRef;
+		pi.pFunc = pf;
 
-		this.funcDict[pf._funcId] = pf;
+		this.profileItemDict[pi.id] = pi;
 
 		return pf;
 	},
 
-	wrapObjectMethod: function(obj, funcName, funcLabel)
+	instrumentObjectFunction: function(obj, funcName, funcLabel)
 	{
 		var pf = null;
 		obj = obj || window;
@@ -191,29 +193,29 @@ Profiler.prototype = {
 			funcLabel = funcLabel || funcName;
 			var funcRef = obj[funcName];
 			if (typeof funcRef === "function"){
-				pf = this.wrapFunction(funcRef, funcLabel);
+				pf = this.instrumentFunction(funcRef, funcLabel);
 				obj[funcName] = pf;
 			}
 		}
 		return pf;
 	},
 
-	wrapObjectMethods: function(obj, objLabel)
+	instrumentObjectFunctions: function(obj, objLabel)
 	{
 		var isFunc = typeof obj === "function";
-		for (var k in obj){
-			if (!isFunc || !funcPropExceptions[k]){
-				this.wrapObjectMethod(obj, k, objLabel + k);
+		for (var prop in obj){
+			if (!isFunc || !funcPropExceptions[prop]){
+				this.instrumentObjectFunction(obj, prop, objLabel + prop);
 			}
 		}
 	},
 
-	enable: function(funcId)
+	enable: function(id)
 	{
-		if (funcId){
-			var func = this.funcDict[funcId];
-			if (func){
-				func._profileData.enable();
+		if (id){
+			var ci = this.profileItemDict[id];
+			if (ci){
+				ci.disable = false;
 			}
 		}
 		else {
@@ -221,12 +223,12 @@ Profiler.prototype = {
 		}
 	},
 
-	disable: function(funcId)
+	disable: function(id)
 	{
-		if (funcId){
-			var func = this.funcDict[funcId];
-			if (func){
-				func._profileData.disable();
+		if (id){
+			var ci = this.profileItemDict[id];
+			if (ci){
+				ci.disabled = true;
 			}
 		}
 		else {
@@ -236,41 +238,76 @@ Profiler.prototype = {
 
 	reset: function()
 	{
-		var fd = this.funcDict;
-		for (var k in fd){
-			fd[k]._profileData.clear();
+		var dict = this.profileItemDict;
+		for (var k in dict){
+			dict[k].clear();
 		}
 		this.callBranches.length = 0;
 		this.callStack.length = 0;
 	},
 
-	handleStart: function(pf, pd, args)
+	getSectionProfileItem: function(label, canCreate)
+	{
+		var id = this.sectionMap[label],
+			pi = id ? this.profileItemDict[id] : null;
+		if (!pi && canCreate){
+			pi = new ProfileItem(label);
+			this.profileItemDict[pi.id] = pi;
+			this.sectionMap[label] = pi.id;
+		}
+		return pi;
+	},
+
+	_startCall: function(pi)
 	{
 		var cs = this.callStack,
 			top = cs.length ? cs[cs.length - 1] : null,
-			callData = {
-				pf: pf,
-				pd: pd,
-				call: pd.calls[pd.calls.length - 1],
-				children: null
-			};
+			ci = pi.start();
 
 		if (top){
-			if (!top.children){
-				top.children = [];
-			}
-			top.children.push(callData);
+			top.addChild(ci);
 		}
 		else {
-			this.callBranches.push(callData);
+			this.callBranches.push(ci);
 		}
 		
-		cs.push(callData);
+		cs.push(ci);
 	},
 
-	handleStop: function(pf, pd, args, rv)
+	_stopCall: function(pi)
 	{
+		pi.stop();
 		this.callStack.pop();
+	},
+
+	_functionStart: function(pi, args)
+	{
+		// XXX: Add observer hook.
+		this._startCall(pi);
+	},
+
+	_functionStop: function(pi, args, rv)
+	{
+		// XXX: Add observer hook.
+		this._stopCall(pi);
+	},
+
+	startProfile: function(label)
+	{
+		// XXX: Add observer hook.
+		var pi = this.getSectionProfileItem(label, true);
+		if (pi){
+			this._startCall(pi);
+		}
+	},
+
+	stopProfile: function(label)
+	{
+		// XXX: Add observer hook.
+		var pi = this.getSectionProfileItem(label);
+		if (pi){
+			this._stopCall(pi);
+		}
 	}
 };
 
