@@ -94,6 +94,6 @@ function dumpProfileHTML(profiler)
 //
 
 window.$dumpProfileText = dumpProfileText;
-window.$dumpProfileHTMLList = dumpProfileHTMLList;
+window.$dumpProfileHTML = dumpProfileHTML;
 
 })(window);
