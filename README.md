@@ -109,7 +109,7 @@ So for example if you wanted to profile a couple of sections of a function, you 
 
 		profiler.startProfile("for-loop");
 
-		for (var i = 0; i < len; i+++)
+		for (var i = 0; i &lt; len; i+++)
 		{
 			...
 		}
