@@ -59,6 +59,13 @@ The first argument is a reference to an object that contains functions you want 
 
 In the example above the profiler will instrument and then set both func1 and func2 properties of obj. Under the hood, instrumentObjectFunctions() finds all properties within obj that are functions, it then instruments each function and then sets that property so that it points to the instrumented version of the function. The labels for each function will be the concatenation of the label passed into instrumentObjectFunctions()  with the name of the property.
 
+If you use jQuery Mobile, you can get some useful/interesting metrics and traces like this:
+
+	profiler.instrumentObjectFunctions($.find, "$.find.");
+	profiler.instrumentObjectFunctions($, "$.");
+	profiler.instrumentObjectFunctions($.fn, "$.fn.");
+	profiler.instrumentObjectFunctions($.mobile, "$.mobile.");
+
 ### Instrumenting Selected Object Functions
 
 If you want to instrument a specific function within an object, you can call instrumentObjectFunction(): 
