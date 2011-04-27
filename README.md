@@ -1,6 +1,6 @@
 # profiler.js
 
-A utility class for instrumenting functions and collecting statistics such as the number of calls, the min/max duration, and the duration of each call. The class also tracks nested calls of instrumented functions, so if you instrument enough of your code, it can also be used as a tracer.
+A utility class for instrumenting functions and collecting metrics such as the number of calls, the min/max duration, and the duration of each call. The class also tracks nested calls of instrumented functions, so if you instrument enough of your code, it can also be used as a tracer.
 
 While not as accurate as some of the profilers built into desktop browsers, it is meant to be used as a tool for gathering information on mobile platforms, where performance/analysis tools are lacking.
 
@@ -12,7 +12,7 @@ To start profiling, you need to first create a profiler object.
 
     var profiler = $createProfiler();
 
-You can create any number of profiler classes, for example, you may want to track statistics for a specific component in your code separately, but in most cases, you'll probably only need one.
+You can create any number of profiler classes, for example, you may want to track metrics for a specific component in your code separately, but in most cases, you'll probably only need one.
 
 ### Instrumenting a Function
 
@@ -153,6 +153,9 @@ Profiling can generate a lot of data and affect the performance of your code. Yo
 
 In the example above, metrics for the myDoSomethingFunction() will only be generated if something calls foo() and the code within foo() triggers a call to myDoSomethingFunction().
 
-### Enabling/Disabling a Profiled Function
-
+## Dumping The Metrics
 ## Issues
+
+### Function Closures Used to Privately Scope Functionality
+
+Libraries like jQuery and jQuery Mobile use anonymous function closures to scope the code within their files. If you are instrumenting from outside those files, it means you can only profile/instrument objects and functions that are exposed globally. If you need to instrument any functions or objects that are private to those files, you will have to place your instrumenting calls inside those files.
