@@ -95,8 +95,10 @@ In the above example, only func2 will be profiled. func1 is untouched.
 
 There may be times when you want to profile specific sections of code, not an entire function. To do this, you simply bracket the code you want to profile with startProfile() and stopProfile() method calls.
 
+<pre>
     profiler.startProfile(label)
 	profiler.stopProfile(label)
+</pre>
 
 So for example if you wanted to profile a couple of sections of a function, you could do something like this:
 
