@@ -107,22 +107,23 @@ So for example if you wanted to profile a couple of sections of a function, you 
 	{
 		...
 
-		profiler.startProfiler("for-loop");
+		profiler.startProfile("for-loop");
 
 		for (var i = 0; i < len; i+++)
 		{
+			...
 		}
 
-		profiler.stopProfiler("for-loop");
+		profiler.stopProfile("for-loop");
 
 		...
 
-		profiler.startProfiler("something-else-section");
+		profiler.startProfile("something-else-section");
 
 		doSomethingElse1();
 		doSomethingElse2();
 
-		profiler.stopProfiler("something-else-section");
+		profiler.stopProfile("something-else-section");
 	}
 </pre>
 
