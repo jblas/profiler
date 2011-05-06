@@ -140,7 +140,7 @@ function Profiler()
 {
 	this.sectionMap = {};
 	this.profileItemDict = {};
-	this.callBranches = [];
+	this.callGraphs = [];
 	this.callStack = [];
 	this.disabled = false;
 }
@@ -260,7 +260,7 @@ Profiler.prototype = {
 		for (var k in dict){
 			dict[k].clear();
 		}
-		this.callBranches.length = 0;
+		this.callGraphs.length = 0;
 		this.callStack.length = 0;
 	},
 
@@ -286,7 +286,7 @@ Profiler.prototype = {
 			top.addChild(ci);
 		}
 		else {
-			this.callBranches.push(ci);
+			this.callGraphs.push(ci);
 		}
 		
 		cs.push(ci);

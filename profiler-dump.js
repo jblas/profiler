@@ -47,11 +47,11 @@ function dumpProfileTextCallInstance(ci, indent, arr)
 
 function dumpProfileText(profiler)
 {
-	var branches = profiler.callBranches,
+	var callGraphs = profiler.callGraphs,
 		output = [];
 
-	for (var i = 0; i < branches.length; i++){
-		dumpProfileTextCallInstance(branches[i], "", output);
+	for (var i = 0; i < callGraphs.length; i++){
+		dumpProfileTextCallInstance(callGraphs[i], "", output);
 		output.push("\n----\n\n");
 	}
 
@@ -83,9 +83,114 @@ function dumpProfileHTMLList(callArray, indent, arr)
 
 function dumpProfileHTML(profiler)
 {
-	var branches = profiler.callBranches,
+	var output = [];
+	dumpProfileHTMLList(profiler.callGraphs, "", output);
+	return output.join("");
+}
+
+
+//
+// Dump as JSON
+//
+
+/*
+
+{
+	"functions": {
+		"10": {
+			"count": 100,
+			"total": 123456,
+			"min":   123,
+			"max":   500,
+			"label": "obj.foo"
+		}
+	},
+
+	"callgraphs": [
+		{
+			"start": 0,
+			"stop":  10,
+			"duration": 10,
+			"id": 10,
+			"parentId": 0,
+			"children": [
+				{
+					"start": 0,
+					"stop":  10,
+					"duration": 10,
+					"id": 10,
+					"parentId": 0,
+					"children": []
+				}
+			]
+		}
+	]
+}
+
+ */
+
+function dumpJSONCallGraph(callItem, output)
+{
+	output.push('{"start":' + callItem.start + ',');
+	output.push('"stop":' + callItem.stop + ',');
+	output.push('"duration":' + callItem.duration + ',');
+	output.push('"id":' + callItem.profileItem.id + ',');
+	output.push('"parentId":' + (callItem.parent ? callItem.parent.id : 0) + ',');
+	output.push('"children":[');
+	var children = callItem.children;
+	if (children) {
+		var len = children.length,
+			last = len - 1;
+		for (var i = 0; i < len; i++) {
+			dumpJSONCallGraph(children[i], output);
+			if (i != last) {
+				output.push(',');
+			}
+		}
+	}
+	output.push(']}');
+}
+
+function dumpProfileJSON(profiler)
+{
+	var pid = profiler.profileItemDict,
+		arr = [],
 		output = [];
-	dumpProfileHTMLList(profiler.callBranches, "", output);
+
+	for (var k in pid) {
+		arr.push(pid[k]);
+	}
+
+	arr = arr.sort(function(a,b){
+		a = a.label;
+		b = b.label;
+		return a == b ? 0 : (a > b ? 1 : -1);
+	});
+
+	output.push('{"functions":{');
+	var len = arr.length, last = len - 1;
+	for (var i = 0; i < len; i++) {
+		var p = arr[i];
+		output.push('"' + p.id + '":{');
+		output.push('"count":' + p.count + ",");
+		output.push('"total":' + p.total + ",");
+		output.push('"min":' + p.min + ",");
+		output.push('"max":' + p.max + ",");
+		output.push('"label":"' + p.label + '"');
+		output.push(i == last ? '}' : '},');
+	}
+	output.push('},"callgraphs:{"');
+	arr = profiler.callGraphs;
+	len = arr.length;
+	last = len -1;
+
+	for (i = 0; i < len; i++) {
+		dumpJSONCallGraph(arr[i], output);
+		if (i != last) {
+			output.push(',');
+		}
+	}
+	output.push('}}');
 	return output.join("");
 }
 
@@ -95,5 +200,6 @@ function dumpProfileHTML(profiler)
 
 window.$dumpProfileText = dumpProfileText;
 window.$dumpProfileHTML = dumpProfileHTML;
+window.$dumpProfileJSON = dumpProfileJSON;
 
 })(window);
