@@ -131,11 +131,11 @@ function dumpProfileHTML(profiler)
 
 function dumpJSONCallGraph(callItem, output)
 {
-	output.push('{"start":' + callItem.start + ',');
-	output.push('"stop":' + callItem.stop + ',');
+	output.push('{"start":' + callItem.startTime + ',');
+	output.push('"stop":' + callItem.stopTime + ',');
 	output.push('"duration":' + callItem.duration + ',');
 	output.push('"id":' + callItem.profileItem.id + ',');
-	output.push('"parentId":' + (callItem.parent ? callItem.parent.id : 0) + ',');
+	output.push('"parentId":' + (callItem.parent ? callItem.parent.profileItem.id : 0) + ',');
 	output.push('"children":[');
 	var children = callItem.children;
 	if (children) {
@@ -179,7 +179,7 @@ function dumpProfileJSON(profiler)
 		output.push('"label":"' + p.label + '"');
 		output.push(i == last ? '}' : '},');
 	}
-	output.push('},"callgraphs:{"');
+	output.push('},"callgraphs":[');
 	arr = profiler.callGraphs;
 	len = arr.length;
 	last = len -1;
@@ -190,7 +190,7 @@ function dumpProfileJSON(profiler)
 			output.push(',');
 		}
 	}
-	output.push('}}');
+	output.push(']}');
 	return output.join("");
 }
 
