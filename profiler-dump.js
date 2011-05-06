@@ -131,10 +131,10 @@ function dumpProfileHTML(profiler)
 
 function dumpJSONCallGraph(callItem, output)
 {
-	output.push('{"start":' + callItem.startTime + ',');
+	output.push('{"id":' + callItem.profileItem.id + ',');
+	output.push('"start":' + callItem.startTime + ',');
 	output.push('"stop":' + callItem.stopTime + ',');
 	output.push('"duration":' + callItem.duration + ',');
-	output.push('"id":' + callItem.profileItem.id + ',');
 	output.push('"parentId":' + (callItem.parent ? callItem.parent.profileItem.id : 0) + ',');
 	output.push('"children":[');
 	var children = callItem.children;
@@ -172,11 +172,11 @@ function dumpProfileJSON(profiler)
 	for (var i = 0; i < len; i++) {
 		var p = arr[i];
 		output.push('"' + p.id + '":{');
+		output.push('"label":"' + p.label + '"');
 		output.push('"count":' + p.count + ",");
 		output.push('"total":' + p.total + ",");
 		output.push('"min":' + p.min + ",");
 		output.push('"max":' + p.max + ",");
-		output.push('"label":"' + p.label + '"');
 		output.push(i == last ? '}' : '},');
 	}
 	output.push('},"callgraphs":[');
