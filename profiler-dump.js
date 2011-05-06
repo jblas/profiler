@@ -172,11 +172,11 @@ function dumpProfileJSON(profiler)
 	for (var i = 0; i < len; i++) {
 		var p = arr[i];
 		output.push('"' + p.id + '":{');
-		output.push('"label":"' + p.label + '"');
-		output.push('"count":' + p.count + ",");
-		output.push('"total":' + p.total + ",");
-		output.push('"min":' + p.min + ",");
-		output.push('"max":' + p.max + ",");
+		output.push('"label":"' + p.label + '",');
+		output.push('"count":' + p.count + ',');
+		output.push('"total":' + p.total + ',');
+		output.push('"min":' + p.min + ',');
+		output.push('"max":' + p.max);
 		output.push(i == last ? '}' : '},');
 	}
 	output.push('},"callgraphs":[');
