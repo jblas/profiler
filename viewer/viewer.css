@@ -1,0 +1,32 @@
+@charset "utf-8";
+
+
+#function-table th {
+	min-width: 4em;
+	background-color: #EEE;
+}
+
+#function-table .label-column {
+	min-width: 20em;
+}
+
+#function-table th, #function-table td {
+	padding: 0.5em;
+}
+
+#function-table td {
+	text-align: right;
+}
+
+#function-table td:nth-child(2) {
+	text-align: left;
+}
+
+#function-table td {
+	border: solid 1px #EEE;
+}
+
+#function-table tr:nth-child(2n+3) {
+	background-color: #DFF8FF;
+}
+

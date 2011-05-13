@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Viewer</title>
+<link href="viewer.css" rel="stylesheet" type="text/css" />
 <script src="http://labs.adobe.com/technologies/spry/includes/SpryData.js"></script>
 <script src="http://labs.adobe.com/technologies/spry/includes/SpryJSONDataSet.js"></script>
 <script src="http://labs.adobe.com/technologies/spry/includes/SpryPagedView.js"></script>
@@ -15,6 +16,7 @@ function dictToArray(dict)
 	if (dict){
 		for (var k in dict){
 			arr.push(dict[k]);
+			dict[k].id = k;
 		}
 	}
 	return arr;
@@ -25,16 +27,24 @@ dsFuncs.setDataFromArray(dictToArray(gJSONData.functions));
 
 var pvFuncs = new Spry.Data.PagedView(dsFuncs, { pageSize: 20 });
 
-pvFuncs.setColumnType(["min", "max", "total", "count"], "number");
+pvFuncs.setColumnType(["id", "min", "max", "total", "count"], "number");
 </script>
 </head>
 
 <body>
+<input type="button" value="First" onclick="pvFuncs.firstPage();" />
+<input type="button" value="Prev" onclick="pvFuncs.previousPage();" />
+
+<input type="button" value="Next" onclick="pvFuncs.nextPage();" />
+<input type="button" value="Last" onclick="pvFuncs.lastPage();" />
+
 <div spry:region="pvFuncs">
-<table>
-<tr><th></th><th spry:sort="label">Function</th><th spry:sort="min">Min</th><th spry:sort="max">Max</th><th spry:sort="total">Total</th><th spry:sort="count">Count</th></tr>
+<p spry:if="{ds_UnfilteredRowCount} &gt; 0">Page {ds_PageNumber} of {ds_PageCount} - Items {ds_PageFirstItemNumber} - {ds_PageLastItemNumber} of {ds_UnfilteredRowCount}</p>
+<p spry:if="{ds_UnfilteredRowCount} == 0">No matching data found!</p>
+<table id="function-table" cellspacing="0">
+<tr><th spry:sort="id">ID</th><th spry:sort="label" class="label-column">Function</th><th spry:sort="min">Min</th><th spry:sort="max">Max</th><th spry:sort="total">Total</th><th spry:sort="count">Count</th></tr>
 <tr spry:repeat="pvFuncs">
-	<td>{ds_PageItemNumber}</td>
+	<td>{id}</td>
 	<td>{label}</td>
     <td>{min}</td>
     <td>{max}</td>
