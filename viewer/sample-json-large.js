@@ -1,4 +1,4 @@
-{
+var gJSONData = {
 	"functions":{
 		"215":{
 			"label":"$.Deferred",
@@ -222060,3 +222060,4 @@
 		}
 	]
 }
+;
