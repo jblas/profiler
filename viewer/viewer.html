@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Viewer</title>
+<script src="http://labs.adobe.com/technologies/spry/includes/SpryData.js"></script>
+<script src="http://labs.adobe.com/technologies/spry/includes/SpryJSONDataSet.js"></script>
+<script src="http://labs.adobe.com/technologies/spry/includes/SpryPagedView.js"></script>
+<script src="sample-json.js"></script>
+<script>
+
+function dictToArray(dict)
+{
+	var arr = [];
+	if (dict){
+		for (var k in dict){
+			arr.push(dict[k]);
+		}
+	}
+	return arr;
+}
+
+var dsFuncs = new Spry.Data.DataSet();
+dsFuncs.setDataFromArray(dictToArray(gJSONData.functions));
+
+var pvFuncs = new Spry.Data.PagedView(dsFuncs, { pageSize: 20 });
+
+pvFuncs.setColumnType(["min", "max", "total", "count"], "number");
+</script>
+</head>
+
+<body>
+<div spry:region="pvFuncs">
+<table>
+<tr><th></th><th spry:sort="label">Function</th><th spry:sort="min">Min</th><th spry:sort="max">Max</th><th spry:sort="total">Total</th><th spry:sort="count">Count</th></tr>
+<tr spry:repeat="pvFuncs">
+	<td>{ds_PageItemNumber}</td>
+	<td>{label}</td>
+    <td>{min}</td>
+    <td>{max}</td>
+    <td>{total}</td>
+    <td>{count}</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
