@@ -56,17 +56,15 @@ function augmentProfilerData(pdata)
 	// each call with its corresponding function.
 
 	pdata.callDict = {};
-	augmentFunctionData(pdata.functions, pdata.callGraphs, pdata.callDict);
-
-	// Calculate call averages.
-	var funcs = pdata.functionList,
-		count = funcs.length;
-	for (var i = 0; i < count; i++){
-	}
+	augmentFunctionData(pdata.functions, pdata.callgraphs, pdata.callDict);
 }
 
+// Preprocess the JSON data.
+
+augmentProfilerData(gJSONData);
+
 var dsFuncs = new Spry.Data.DataSet();
-dsFuncs.setDataFromArray(buildFunctionList(gJSONData.functions));
+dsFuncs.setDataFromArray(gJSONData.functionList);
 
 var pvFuncs = new Spry.Data.PagedView(dsFuncs, { pageSize: 20 });
 
