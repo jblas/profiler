@@ -30,3 +30,13 @@
 	background-color: #DFF8FF;
 }
 
+
+#function-table .hover {
+	background-color: #FF6;
+}
+
+#function-table .selected, #function-table tr.selected:nth-child(2n+3) {
+	background-color: #333;
+	color: white;
+}
+
