@@ -69,3 +69,10 @@ dsFuncs.setDataFromArray(gJSONData.functionList);
 var pvFuncs = new Spry.Data.PagedView(dsFuncs, { pageSize: 20 });
 
 pvFuncs.setColumnType(["id", "min", "max", "average", "total", "count"], "number");
+
+Spry.Utils.addLoadListener(function(){
+	Spry.Utils.addEventListener("first-btn", "click", function(){ pvFuncs.firstPage(); });
+	Spry.Utils.addEventListener("prev-btn", "click", function(){ pvFuncs.previousPage(); });
+	Spry.Utils.addEventListener("next-btn", "click", function(){ pvFuncs.nextPage(); });
+	Spry.Utils.addEventListener("last-btn", "click", function(){ pvFuncs.lastPage(); });
+});

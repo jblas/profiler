@@ -12,26 +12,36 @@
 </head>
 
 <body>
-<input id="first-btn" type="button" value="First" onclick="pvFuncs.firstPage();" />
-<input id="prev-btn" type="button" value="Prev" onclick="pvFuncs.previousPage();" />
-<input id="next-btn" type="button" value="Next" onclick="pvFuncs.nextPage();" />
-<input id="last-btn" type="button" value="Last" onclick="pvFuncs.lastPage();" />
-
+<h2>Profiled Functions</h2>
+<input id="first-btn" type="button" value="First" />
+<input id="prev-btn" type="button" value="Prev" />
+<input id="next-btn" type="button" value="Next" />
+<input id="last-btn" type="button" value="Last" />
 <div spry:region="pvFuncs">
-<p spry:if="{ds_UnfilteredRowCount} &gt; 0">Page {ds_PageNumber} of {ds_PageCount} - Items {ds_PageFirstItemNumber} - {ds_PageLastItemNumber} of {ds_UnfilteredRowCount}</p>
-<p spry:if="{ds_UnfilteredRowCount} == 0">No matching data found!</p>
-<table id="function-table" cellspacing="0">
-<tr><th spry:sort="id">id</th><th spry:sort="label" class="label-column">function</th><th spry:sort="min">min</th><th spry:sort="max">max</th><th spry:sort="average">avg</th><th spry:sort="total">total</th><th spry:sort="count">count</th></tr>
-<tr spry:repeat="pvFuncs" spry:hover="hover" spry:select="selected" spry:selectgroup="profiled-functions">
-	<td>{id}</td>
-	<td>{label}</td>
-    <td>{min}</td>
-    <td>{max}</td>
-    <td>{average}</td>
-    <td>{total}</td>
-    <td>{count}</td>
-</tr>
-</table>
+  <p spry:if="{ds_UnfilteredRowCount} &gt; 0">Page {ds_PageNumber} of {ds_PageCount} - Items {ds_PageFirstItemNumber} - {ds_PageLastItemNumber} of {ds_UnfilteredRowCount}</p>
+  <p spry:if="{ds_UnfilteredRowCount} == 0">No matching data found!</p>
+  <table id="function-table" cellspacing="0">
+    <tr>
+      <th spry:sort="id">id</th>
+      <th spry:sort="label" class="label-column">function</th>
+      <th spry:sort="min">min</th>
+      <th spry:sort="max">max</th>
+      <th spry:sort="average">avg</th>
+      <th spry:sort="total">total</th>
+      <th spry:sort="count">count</th>
+    </tr>
+    <tr spry:repeat="pvFuncs" spry:hover="hover" spry:select="selected" spry:selectgroup="profiled-functions">
+      <td>{id}</td>
+      <td>{label}</td>
+      <td>{min}</td>
+      <td>{max}</td>
+      <td>{average}</td>
+      <td>{total}</td>
+      <td>{count}</td>
+    </tr>
+  </table>
+</div>
+<div id="call-graphs">
 </div>
 </body>
 </html>
