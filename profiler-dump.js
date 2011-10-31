@@ -45,6 +45,55 @@ function dumpProfileTextCallInstance(ci, indent, arr)
 	return arr;
 }
 
+function dumpProfileItems( profiler, minCallCount, sortColumns )
+{
+	var output = [],
+		items = [],
+		itemsCount = 0,
+		dict = profiler.profileItemDict,
+		item,
+		avg,
+		key,
+		i;
+
+	minCallCount = minCallCount || 1;
+	sortColumns = sortColumns || [ "max", "count" ];
+
+	// Run through all the calls in our item dictionary
+	// and grab only the ones that were actually called.
+
+	for ( key in dict ) {
+		var item = dict[ key ];
+		if ( item.count >= minCallCount ) {
+			items.push( item );
+		}
+	}
+
+	itemsCount = items.length;
+
+	items = items.sort(function( a, b ) {
+		var col = 0,
+			i;
+		for ( col = 0; col < sortColumns.length; col++ ) {
+			var prop = sortColumns[ col ];
+			if ( a[ prop ] > b[ prop ] ) {
+				return -1;
+			} else if ( a[ prop ] < b[ prop ] ) {
+				return 1;
+			}
+		}
+		return 0;
+	});
+
+	output.push( "count\t\tmax\t\tmin\tavg\t\ttotal\t\tlabel\n" );
+	for ( i = 0; i < itemsCount; i++ ) {
+		item = items[ i ];
+		avg = Math.round(item.avg * 100) / 100;
+		output.push( item.count + "\t\t" + item.max + "\t\t" + item.min + "\t\t" + avg + "\t\t" + item.total + "\t\t" + item.label + "\n");
+	}
+	return output.join("");
+}
+
 function dumpProfileText(profiler)
 {
 	var callGraphs = profiler.callGraphs,
@@ -198,6 +247,7 @@ function dumpProfileJSON(profiler)
 // Expose Public Functions
 //
 
+window.$dumpProfileItems = dumpProfileItems;
 window.$dumpProfileText = dumpProfileText;
 window.$dumpProfileHTML = dumpProfileHTML;
 window.$dumpProfileJSON = dumpProfileJSON;
