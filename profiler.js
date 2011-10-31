@@ -91,7 +91,8 @@ function ProfileItem(label)
 {
 	this.stack = [];
 	this.calls = [];
-	this.count = this.total = this.min = this.max = 0;
+	this.count = this.total = this.avg = this.max = 0;
+	this.min = 100000;
 	this.disabled = false;
 	this.label = label || "anonymous";
 	this.id = nextProfileItemId++;
@@ -123,13 +124,17 @@ ProfileItem.prototype = {
 		this.min = Math.min(this.min, duration);
 		this.max = Math.max(this.max, duration);
 
+		// This may not be accurate until the
+		// callstack completely unwinds.
+		this.avg = this.total / this.count;
+
 		return ci;
 	},
 
 	clear: function() {
-		this.stack.length;
-		this.calls.length;
-		this.count = this.total = this.min = this.max = 0;
+		this.stack.length = 0;
+		this.calls.length = 0;
+		this.count = this.total = this.avg = this.min = this.max = 0;
 	}
 };
 
@@ -212,19 +217,23 @@ Profiler.prototype = {
 
 	startProfile: function(label)
 	{
-		// XXX: Add observer hook.
-		var pi = this._getSectionProfileItem(label, true);
-		if (pi){
-			this._startCall(pi);
+		if ( !this.disabled ){
+			// XXX: Add observer hook.
+			var pi = this._getSectionProfileItem(label, true);
+			if (pi && !pi.disabled){
+				this._startCall(pi);
+			}
 		}
 	},
 
 	stopProfile: function(label)
 	{
-		// XXX: Add observer hook.
-		var pi = this._getSectionProfileItem(label);
-		if (pi){
-			this._stopCall(pi);
+		if (!this.disabled){
+			// XXX: Add observer hook.
+			var pi = this._getSectionProfileItem(label);
+			if (pi && !pi.disabled){
+				this._stopCall(pi);
+			}
 		}
 	},
 
