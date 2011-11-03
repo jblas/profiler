@@ -1,42 +1,14 @@
 @charset "utf-8";
 
-
-#function-table th {
-	min-width: 4em;
-	background-color: #EEE;
+#graphs li > ul {
+	display: none;
 }
 
-#function-table .label-column {
-	min-width: 20em;
+#graphs li.show > ul {
+	display: block;
 }
 
-#function-table th, #function-table td {
-	padding: 0.5em;
+#graphs {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 80%;
 }
-
-#function-table td {
-	text-align: right;
-}
-
-#function-table td:nth-child(2) {
-	text-align: left;
-}
-
-#function-table td {
-	border: solid 1px #CCC;
-}
-
-#function-table tr:nth-child(2n+3) {
-	background-color: #DFF8FF;
-}
-
-
-#function-table .hover {
-	background-color: #FF6;
-}
-
-#function-table .selected, #function-table tr.selected:nth-child(2n+3) {
-	background-color: #333;
-	color: white;
-}
-
