@@ -1,5 +1,27 @@
 @charset "utf-8";
 
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 80%;
+}
+
+.hide {
+	display: none;
+}
+
+#item-table {
+	border-width: 1px;
+	border-color: #999;
+}
+
+#item-table td {
+	text-align: right;
+}
+
+#item-table td:last-child {
+	text-align: left;
+}
+
 #graphs li > ul {
 	display: none;
 }
@@ -8,11 +30,24 @@
 	display: block;
 }
 
-#graphs {
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 80%;
-}
 
 #graphs ul {
 	padding-left: 1em;
+}
+
+#useragent, #date {
+	font-weight: bold;
+	margin-bottom: 1em;
+}
+#useragent span, #date span {
+	font-weight: normal;
+}
+
+#graphs li:hover {
+	background-color: #CCFFFF;
+	cursor: pointer
+}
+
+#call-stats-hdr, #call-graphs-hdr {
+	cursor: pointer
 }

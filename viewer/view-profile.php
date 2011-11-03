@@ -14,6 +14,12 @@ $(function() {
 </head>
 
 <body>
+<div id="useragent">Device User Agent: <span></span></div>
+<div id="date">Profile Date: <span></span></div>
+<h2 id="call-stats-hdr">Call Stats:</h2>
+<div id="items">
+</div>
+<h2 id="call-graphs-hdr">Call Graphs:</h2>
 <div id="graphs">
 </div>
 </body>
