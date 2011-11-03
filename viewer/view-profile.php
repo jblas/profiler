@@ -20,6 +20,7 @@ $(function() {
 <div id="items">
 </div>
 <h2 id="call-graphs-hdr">Call Graphs:</h2>
+<p>Click on the list items below to drill down into a call graph. Note that all call graphs with a zero duration have been filtered out.</p>
 <div id="graphs">
 </div>
 </body>
