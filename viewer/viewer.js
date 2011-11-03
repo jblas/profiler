@@ -68,7 +68,6 @@ function createChildren( $li )
 }
 
 $(function() {
-	$.getJSON( "sample-json-large.js", generateGraphs );
 	$( "#graphs" ).bind( "click", function( e ) {
 		var $li = $( e.target ).closest( "li" );
 		if ( $li.length && !$li.attr( "data-loaded" ) ) {
