@@ -165,7 +165,7 @@ function stringEscape( str )
 
 function dumpProfileJSON( profiler )
 {
-	var output = [ '{"version": "0.1","useragent":"' + stringEscape(navigator.userAgent) + '","items":{' ],
+	var output = [ '{"version": "0.1","useragent":"' + stringEscape(navigator.userAgent) + '","date":'+ ( new Date() ).getTime() +',"items":{' ],
 		itemDict = profiler.profileItemDict,
 		graphs = profiler.callGraphs,
 		calls = [],
