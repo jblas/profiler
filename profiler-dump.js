@@ -160,12 +160,12 @@ function dumpProfileHTML(profiler)
 
 function stringEscape( str )
 {
-	return str.replace(/('|"|\\)/g, "\\$1");
+	return str.replace(/('|"|\\)/g, "\\$1").replace( /\n/, "\\n" ).replace( /\r/, "\\r" ).replace( /\t/, "\\t" );
 }
 
 function dumpProfileJSON( profiler )
 {
-	var output = [ '{"version": "0.1","items":{' ],
+	var output = [ '{"version": "0.1","useragent":"' + stringEscape(navigator.userAgent) + '","items":{' ],
 		itemDict = profiler.profileItemDict,
 		graphs = profiler.callGraphs,
 		calls = [],
