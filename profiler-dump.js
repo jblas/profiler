@@ -141,105 +141,89 @@ function dumpProfileHTML(profiler)
 //
 // Dump as JSON
 //
+//    {
+//    	version: "0.1",
+//    
+//    	items: {
+//    		"itemId": [ label, min, max, avg, total, count ],
+//    		...
+//    	},
+//    
+//    	calls: {
+//    		"callId": [ itemId, start, stop, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
+//    		...
+//    	},
+//    
+//    	graphs: [ "callId", "callId", "callId", ... ]
+//    }
+//
 
-/*
-
+function stringEscape( str )
 {
-	"functions": {
-		"10": {
-			"count": 100,
-			"total": 123456,
-			"min":   123,
-			"max":   500,
-			"label": "obj.foo"
-		}
-	},
-
-	"callgraphs": [
-		{
-			"start": 0,
-			"stop":  10,
-			"duration": 10,
-			"id": 10,
-			"parentId": 0,
-			"children": [
-				{
-					"start": 0,
-					"stop":  10,
-					"duration": 10,
-					"id": 10,
-					"parentId": 0,
-					"children": []
-				}
-			]
-		}
-	]
+	return str.replace(/('|"|\\)/g, "\\$1");
 }
 
- */
-
-function dumpJSONCallGraph(callItem, output)
+function dumpProfileJSON( profiler )
 {
-	output.push('{"id":' + callItem.profileItem.id + ',');
-	output.push('"start":' + callItem.startTime + ',');
-	output.push('"stop":' + callItem.stopTime + ',');
-	output.push('"duration":' + callItem.duration + ',');
-	output.push('"parentId":' + (callItem.parent ? callItem.parent.profileItem.id : 0) + ',');
-	output.push('"children":[');
-	var children = callItem.children;
-	if (children) {
-		var len = children.length,
-			last = len - 1;
-		for (var i = 0; i < len; i++) {
-			dumpJSONCallGraph(children[i], output);
-			if (i != last) {
-				output.push(',');
+	var output = [ '{"version": "0.1","items":{' ],
+		itemDict = profiler.profileItemDict,
+		graphs = profiler.callGraphs,
+		calls = [],
+		ca, cc, c, i, j, k, key, item, first = true;
+
+	first = true;
+	for ( k in itemDict ) {
+		item = itemDict[ k ];
+
+		if ( item.count > 0 ) {
+			if ( !first ) {
+				output.push( ',' );
+			} else {
+				first = false;
+			}
+			output.push( '"' + k + '":[' + '"' + stringEscape( item.label ) + '",' + item.min + ',' + item.max + ',' + ( Math.round( item.avg*100 ) / 100 ) + ',' + item.total + ',' + item.count + ']' );
+			if ( item.calls && item.calls.length ) {
+				calls.push( item.calls );
 			}
 		}
 	}
-	output.push(']}');
-}
 
-function dumpProfileJSON(profiler)
-{
-	var pid = profiler.profileItemDict,
-		arr = [],
-		output = [];
+	output.push('},"calls":{');
+	first = true;
+	for ( i = 0; i < calls.length; i++ ) {
+		ca = calls[ i ];
+		for ( j = 0; j < ca.length; j++ ) {
+			if ( !first ) {
+				output.push( ',' );
+			} else {
+				first = false;
+			}
+			c = ca[ j ];
+			cc = c.children;
 
-	for (var k in pid) {
-		arr.push(pid[k]);
-	}
-
-	arr = arr.sort(function(a,b){
-		a = a.label;
-		b = b.label;
-		return a == b ? 0 : (a > b ? 1 : -1);
-	});
-
-	output.push('{"functions":{');
-	var len = arr.length, last = len - 1;
-	for (var i = 0; i < len; i++) {
-		var p = arr[i];
-		output.push('"' + p.id + '":{');
-		output.push('"label":"' + p.label + '",');
-		output.push('"count":' + p.count + ',');
-		output.push('"total":' + p.total + ',');
-		output.push('"min":' + p.min + ',');
-		output.push('"max":' + p.max);
-		output.push(i == last ? '}' : '},');
-	}
-	output.push('},"callgraphs":[');
-	arr = profiler.callGraphs;
-	len = arr.length;
-	last = len -1;
-
-	for (i = 0; i < len; i++) {
-		dumpJSONCallGraph(arr[i], output);
-		if (i != last) {
-			output.push(',');
+			output.push( '"' + c.id + '":["' + c.profileItem.id + '",' + c.startTime + ',' + c.stopTime + ',' + c.duration + ',' + ( c.parent ? '"' + c.parent.id + '"' : 'null' ) );
+			if ( cc && cc.length ) {
+				output.push( ',[' );
+				for ( k = 0; k < cc.length; k++ ) {
+					if ( k > 0 ) {
+						output.push( ',' );
+					}
+					output.push( '"' + cc[ k ].id + '"' );
+				}
+				output.push( ']' );
+			}
+			output.push( ']' );
 		}
 	}
+	output.push('},"graphs":[');
+	for (var i = 0; i < graphs.length; i++ ) {
+		if ( i > 0 ) {
+			output.push( ',' );
+		}
+		output.push( '"' + graphs[ i ].id + '"' );
+	}
 	output.push(']}');
+
 	return output.join("");
 }
 

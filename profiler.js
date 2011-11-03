@@ -27,6 +27,7 @@
 (function(){
 
 var nextProfileItemId = 1,
+	nextCallItemId = 1,
 	funcPropExceptions = {
 		arguments:    true,
 		arity:        true,
@@ -41,6 +42,7 @@ var nextProfileItemId = 1,
 
 function CallInstance(profileItem)
 {
+	this.id = nextCallItemId++;
 	this.startTime =     0;
 	this.stopTime =      0;
 	this.duration =      0;
