@@ -8,7 +8,7 @@
 <script src="viewer.js"></script>
 <script>
 $(function() {
-	$.getJSON( "user-profiles/<?php echo $_GET["profile"]?>.json", generateGraphs );
+	loadProfile( "<?php echo $_GET["profile"]?>" );
 });
 </script>
 </head>

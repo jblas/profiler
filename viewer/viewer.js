@@ -77,4 +77,10 @@ $(function() {
 	});
 });
 
+
+window.generateGraphs = generateGraphs;
+window.loadProfile = function( profileId ) {
+	$.getJSON( "user-profiles/"+ profileId +".json", generateGraphs );
+};
+
 })( jQuery, window );

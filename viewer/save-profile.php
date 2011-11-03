@@ -25,7 +25,11 @@
 	}
 	$new_file_id = $today . '-' . ($last_file_num + 1);
 	$new_file_name = 'user-profiles/' . $new_file_id . '.json';
-	
+
+	if (get_magic_quotes_gpc()) {
+    	$profile_data = stripslashes($profile_data);
+	}
+
 	$new_file = fopen($new_file_name, 'w');
 	fwrite($new_file, $profile_data);
 	fclose($new_file);
