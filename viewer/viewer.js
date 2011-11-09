@@ -13,7 +13,7 @@
 //    	},
 //    
 //    	calls: {
-//    		"callId": [ itemId, start, stop, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
+//    		"callId": [ itemId, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
 //    		...
 //    	},
 //    
@@ -77,7 +77,7 @@ function createListFromArray( items, calls, arr )
 		if ( call ) {
 			item = items[ call[ 0 ] ];
 			li = document.createElement( "li" );
-			li.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " + call[ 3 ] ) );
+			li.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " + call[ 1 ] ) );
 			li.setAttribute( "data-id", callId );
 			li.setAttribute( "id", "c-"+ callId );
 			ul.appendChild( li );
@@ -97,7 +97,7 @@ function generateGraphs( profile )
 	for ( i = 0; i < graphs.length; i++ ) {
 		g = graphs[ i ];
 		c = calls[ g ];
-		if ( c && c[ 3 ] >= gGraphMinDuration ) {
+		if ( c && c[ 1 ] >= gGraphMinDuration ) {
 			filtered.push( g );
 		}
 	}
@@ -113,7 +113,7 @@ function createChildren( $li )
 	var callId = $li.attr( "data-id" ),
 		calls = gProfile.calls,
 		call = calls[ callId ],
-		children = call[ 5 ];
+		children = call[ 3 ];
 	if ( children && children.length ) {
 		$li.append( createListFromArray( gProfile.items, calls, children ) );
 	}

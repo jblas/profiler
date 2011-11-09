@@ -150,7 +150,7 @@ function dumpProfileHTML(profiler)
 //    	},
 //    
 //    	calls: {
-//    		"callId": [ itemId, start, stop, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
+//    		"callId": [ itemId, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
 //    		...
 //    	},
 //    
@@ -201,7 +201,7 @@ function dumpProfileJSON( profiler )
 			c = ca[ j ];
 			cc = c.children;
 
-			output.push( '"' + c.id + '":["' + c.profileItem.id + '",' + c.startTime + ',' + c.stopTime + ',' + c.duration + ',' + ( c.parent ? '"' + c.parent.id + '"' : 'null' ) );
+			output.push( '"' + c.id + '":["' + c.profileItem.id + '",' + c.duration + ',' + ( c.parent ? '"' + c.parent.id + '"' : 'null' ) );
 			if ( cc && cc.length ) {
 				output.push( ',[' );
 				for ( k = 0; k < cc.length; k++ ) {
