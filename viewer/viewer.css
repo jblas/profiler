@@ -9,6 +9,29 @@ body {
 	display: none;
 }
 
+.normal, .slow, .slower, .slowest {
+	font-size: 70%;
+	padding: 1px;
+	border: solid 1px black;
+}
+
+.slowest {
+	background-color: red;
+	color: white;
+}
+
+.slower {
+	background-color: orange;
+}
+
+.slow {
+	background-color: yellow;
+}
+
+.normal {
+	border: none;
+}
+
 #item-table {
 	border-width: 1px;
 	border-color: #999;

@@ -66,10 +66,23 @@ function generateCallTable( profile )
 	$( "#items" ).html( output.join( "") );
 }
 
+function getDurationClass( duration )
+{
+	var cname = "normal";
+	if ( duration >= 100 ) {
+		cname = "slowest";
+	} else if ( duration >= 50 ) {
+		cname = "slower";
+	} else if ( duration >= 10 ) {
+		cname = "slow";
+	}
+	return cname;
+}
+
 function createListFromArray( items, calls, arr )
 {
 	var ul = document.createElement( "ul" ),
-		callId, call, item, li, a;
+		callId, call, item, li, a, s;
 
 	for ( var i = 0; i < arr.length; i ++ ) {
 		callId = arr[ i ];
@@ -77,7 +90,11 @@ function createListFromArray( items, calls, arr )
 		if ( call ) {
 			item = items[ call[ 0 ] ];
 			li = document.createElement( "li" );
-			li.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " + call[ 1 ] ) );
+			li.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " ) );
+			s = document.createElement( "span" );
+			s.appendChild( document.createTextNode( "" + call[ 1 ] ) );
+			s.className = getDurationClass( call[ 1 ] );
+			li.appendChild( s );
 			li.setAttribute( "data-id", callId );
 			li.setAttribute( "id", "c-"+ callId );
 			ul.appendChild( li );
