@@ -74,3 +74,25 @@ body {
 #call-stats-hdr, #call-graphs-hdr {
 	cursor: pointer
 }
+
+#graph-list, #graph-list ul {
+	list-style: none;
+}
+
+#graph-list li {
+	background:4px 0 url(images/tree-connector.png) repeat-y;
+}
+
+#graph-list li div {
+	padding-left: 15px;
+	background: center left url(images/tree-closed.png) no-repeat;
+}
+
+#graph-list li.show > div {
+	background: center left url(images/tree-open.png) no-repeat;
+}
+
+#graph-list li.leaf div {
+	background: center left url(images/tree-leaf.png) no-repeat;
+}
+

@@ -82,7 +82,7 @@ function getDurationClass( duration )
 function createListFromArray( items, calls, arr )
 {
 	var ul = document.createElement( "ul" ),
-		callId, call, item, li, a, s;
+		callId, call, item, li, label, s;
 
 	for ( var i = 0; i < arr.length; i ++ ) {
 		callId = arr[ i ];
@@ -90,11 +90,18 @@ function createListFromArray( items, calls, arr )
 		if ( call ) {
 			item = items[ call[ 0 ] ];
 			li = document.createElement( "li" );
-			li.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " ) );
+
+			if ( !call[ 3 ] || call[ 3 ].length < 1 ) {
+				li.className = "leaf";
+			}
+
+			label = document.createElement( "div" );
+			label.appendChild( document.createTextNode( escapeEntities( item[ 0 ] ) + " - " ) );
 			s = document.createElement( "span" );
 			s.appendChild( document.createTextNode( "" + call[ 1 ] ) );
 			s.className = getDurationClass( call[ 1 ] );
-			li.appendChild( s );
+			label.appendChild( s );
+			li.appendChild( label );
 			li.setAttribute( "data-id", callId );
 			li.setAttribute( "id", "c-"+ callId );
 			ul.appendChild( li );
