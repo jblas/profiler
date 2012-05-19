@@ -24,39 +24,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function(){
+(function(window){
 
-var nextProfileItemId = 1,
-	nextCallItemId = 1,
-	funcPropExceptions = {
-		arguments:    true,
-		arity:        true,
-		caller:       true,
-		constructor:  true,
-		length:       true,
-		name:         true,
-		apply:        true,
-		bind:         true,
-		call:         true,
-	};
-
-function CallInstance(profileItem)
-{
-	this.id = nextCallItemId++;
-	this.startTime =     0;
-	this.stopTime =      0;
-	this.duration =      0;
-	this.profileItem =   profileItem;
-	this.callNumber =    0;
-	this.parent =        null;
-	this.children =      null;
-}
+var JSP = window.JSP = {
+	nextProfiledItemId: 1,
+	nextCallInstanceId: 1,
+	funcPropExceptions: {
+		"arguments":    true,
+		"arity":        true,
+		"caller":       true,
+		"constructor":  true,
+		"length":       true,
+		"name":         true,
+		"apply":        true,
+		"bind":         true,
+		"call":         true
+	}
+};
 
 // CallInstance object stores the data
 // for a unique call to a profiled function/method.
 
-CallInstance.prototype = {
-	constructor: CallInstance,
+JSP.CallInstance = function(profiledItem)
+{
+	this.id =            JSP.nextCallInstanceId++;
+	this.startTime =     0;
+	this.stopTime =      0;
+	this.duration =      0;
+	this.profiledItem =  profiledItem;
+	this.callNumber =    0;
+	this.parent =        null;
+	this.children =      null;
+};
+
+JSP.CallInstance.prototype = {
+	constructor: JSP.CallInstance,
 	startTimer: function()
 	{
 		this.startTime = this.stopTime = this.currentTime();
@@ -86,10 +88,10 @@ CallInstance.prototype = {
 	}
 };
 
-// ProfileItem stores all of the call data for
+// JSP.ProfiledItem stores all of the call data for
 // a specific function/method.
 
-function ProfileItem(label)
+JSP.ProfiledItem = function(label)
 {
 	this.stack = [];
 	this.calls = [];
@@ -97,15 +99,15 @@ function ProfileItem(label)
 	this.min = 100000;
 	this.disabled = false;
 	this.label = label || "anonymous";
-	this.id = nextProfileItemId++;
-}
+	this.id = JSP.nextProfiledItemId++;
+};
 
-ProfileItem.prototype = {
-	constructor: ProfileItem,
+JSP.ProfiledItem.prototype = {
+	constructor: JSP.ProfiledItem,
 
 	start: function()
 	{
-		var ci = new CallInstance(this);
+		var ci = new JSP.CallInstance(this);
 		this.stack.push(ci);
 		this.calls.push(ci);
 		++this.count;
@@ -117,11 +119,12 @@ ProfileItem.prototype = {
 
 	stop: function()
 	{
-		var ci = this.stack.pop();
+		var ci = this.stack.pop(),
+			duration;
 
 		ci.stopTimer();
 
-		var duration = ci.duration;
+		duration = ci.duration;
 		this.total += duration;
 		this.min = Math.min(this.min, duration);
 		this.max = Math.max(this.max, duration);
@@ -140,36 +143,38 @@ ProfileItem.prototype = {
 	}
 };
 
-// Profiler stores the profile data for all functions/methods
+// JSP.Profiler stores the profile data for all functions/methods
 // it manages.
 
-function Profiler()
+JSP.Profiler = function()
 {
 	this.sectionMap = {};
-	this.profileItemDict = {};
+	this.profiledItemDict = {};
 	this.callGraphs = [];
 	this.callStack = [];
 	this.disabled = false;
-}
+};
 
-Profiler.prototype = {
-	constructor: Profiler,
+JSP.Profiler.prototype = {
+	constructor: JSP.Profiler,
 
 	instrumentFunction: function(funcRef, label)
 	{
 		var self = this,
-			pi = new ProfileItem(label),
+			pi = new JSP.ProfiledItem(label),
 			pf = function(){
-				var enabled = !self.disabled && !pi.disabled;
+				var enabled = !self.disabled && !pi.disabled,
+					rv;
 				if (enabled){
 					self._startFunction(pi, arguments);
 				}
-				var rv = funcRef.apply(this, arguments);
+				rv = funcRef.apply(this, arguments);
 				if (enabled){
 					self._stopFunction(pi, arguments, rv);
 				}
 				return rv;
-			};
+			},
+			prop;
 
 		// The goal here is to make the instrumented function
 		// look just like the original function, including any
@@ -177,8 +182,8 @@ Profiler.prototype = {
 		// us to instrument constructors as well as functions
 		// that are used as namespaces for other functionality.
 
-		for (var prop in funcRef){
-			if (!funcPropExceptions[prop]){
+		for (prop in funcRef){
+			if (!JSP.funcPropExceptions[prop]){
 				pf[prop] = funcRef[prop];
 			}
 		}
@@ -187,18 +192,19 @@ Profiler.prototype = {
 		pi.oFunc = funcRef;
 		pi.pFunc = pf;
 
-		this.profileItemDict[pi.id] = pi;
+		this.profiledItemDict[pi.id] = pi;
 
 		return pf;
 	},
 
 	instrumentObjectFunction: function(obj, funcName, funcLabel)
 	{
-		var pf = null;
+		var pf = null,
+			funcRef;
 		obj = obj || window;
 		if (obj && funcName){
 			funcLabel = funcLabel || funcName;
-			var funcRef = obj[funcName];
+			funcRef = obj[funcName];
 			if (typeof funcRef === "function"){
 				pf = this.instrumentFunction(funcRef, funcLabel);
 				obj[funcName] = pf;
@@ -209,9 +215,11 @@ Profiler.prototype = {
 
 	instrumentObjectFunctions: function(obj, objLabel)
 	{
-		var isFunc = typeof obj === "function";
-		for (var prop in obj){
-			if (!isFunc || !funcPropExceptions[prop]){
+		var isFunc = typeof obj === "function",
+			prop;
+
+		for (prop in obj){
+			if (!isFunc || !JSP.funcPropExceptions[prop]){
 				this.instrumentObjectFunction(obj, prop, objLabel + prop);
 			}
 		}
@@ -221,7 +229,7 @@ Profiler.prototype = {
 	{
 		if ( !this.disabled ){
 			// XXX: Add observer hook.
-			var pi = this._getSectionProfileItem(label, true);
+			var pi = this._getSectionProfiledItem(label, true);
 			if (pi && !pi.disabled){
 				this._startCall(pi);
 			}
@@ -232,7 +240,7 @@ Profiler.prototype = {
 	{
 		if (!this.disabled){
 			// XXX: Add observer hook.
-			var pi = this._getSectionProfileItem(label);
+			var pi = this._getSectionProfiledItem(label);
 			if (pi && !pi.disabled){
 				this._stopCall(pi);
 			}
@@ -242,7 +250,7 @@ Profiler.prototype = {
 	enable: function(id)
 	{
 		if (id){
-			var ci = this.profileItemDict[id];
+			var ci = this.profiledItemDict[id];
 			if (ci){
 				ci.disable = false;
 			}
@@ -255,7 +263,7 @@ Profiler.prototype = {
 	disable: function(id)
 	{
 		if (id){
-			var ci = this.profileItemDict[id];
+			var ci = this.profiledItemDict[id];
 			if (ci){
 				ci.disabled = true;
 			}
@@ -267,21 +275,22 @@ Profiler.prototype = {
 
 	reset: function()
 	{
-		var dict = this.profileItemDict;
-		for (var k in dict){
+		var dict = this.profiledItemDict,
+			k;
+		for (k in dict){
 			dict[k].clear();
 		}
 		this.callGraphs.length = 0;
 		this.callStack.length = 0;
 	},
 
-	_getSectionProfileItem: function(label, canCreate)
+	_getSectionProfiledItem: function(label, canCreate)
 	{
 		var id = this.sectionMap[label],
-			pi = id ? this.profileItemDict[id] : null;
+			pi = id ? this.profiledItemDict[id] : null;
 		if (!pi && canCreate){
-			pi = new ProfileItem(label);
-			this.profileItemDict[pi.id] = pi;
+			pi = new JSP.ProfiledItem(label);
+			this.profiledItemDict[pi.id] = pi;
 			this.sectionMap[label] = pi.id;
 		}
 		return pi;
@@ -324,7 +333,7 @@ Profiler.prototype = {
 
 window.$createProfiler = function()
 {
-	return new Profiler();
-}
+	return new JSP.Profiler();
+};
 
-})();
+})(window);
