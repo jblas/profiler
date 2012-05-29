@@ -26,39 +26,25 @@
 
 (function(window){
 
-var JSP = window.JSP = {
-	nextProfiledItemId: 1,
-	nextCallInstanceId: 1,
-	funcPropExceptions: {
-		"arguments":    true,
-		"arity":        true,
-		"caller":       true,
-		"constructor":  true,
-		"length":       true,
-		"name":         true,
-		"apply":        true,
-		"bind":         true,
-		"call":         true
-	}
-};
+var nextProfiledItemId = 1,
+	nextCallInstanceId = 1;
 
 // CallInstance object stores the data
 // for a unique call to a profiled function/method.
 
-JSP.CallInstance = function(profiledItem)
+function CallInstance(profiledItem)
 {
-	this.id =            JSP.nextCallInstanceId++;
+	this.id =            nextCallInstanceId++;
 	this.startTime =     0;
 	this.stopTime =      0;
 	this.duration =      0;
 	this.profiledItem =  profiledItem;
-	this.callNumber =    0;
 	this.parent =        null;
 	this.children =      null;
 };
 
-JSP.CallInstance.prototype = {
-	constructor: JSP.CallInstance,
+CallInstance.prototype = {
+	constructor: CallInstance,
 	startTimer: function()
 	{
 		this.startTime = this.stopTime = this.currentTime();
@@ -88,10 +74,10 @@ JSP.CallInstance.prototype = {
 	}
 };
 
-// JSP.ProfiledItem stores all of the call data for
+// ProfiledItem stores all of the call data for
 // a specific function/method.
 
-JSP.ProfiledItem = function(label)
+function ProfiledItem(label)
 {
 	this.stack = [];
 	this.calls = [];
@@ -99,15 +85,15 @@ JSP.ProfiledItem = function(label)
 	this.min = 100000;
 	this.disabled = false;
 	this.label = label || "anonymous";
-	this.id = JSP.nextProfiledItemId++;
+	this.id = nextProfiledItemId++;
 };
 
-JSP.ProfiledItem.prototype = {
-	constructor: JSP.ProfiledItem,
+ProfiledItem.prototype = {
+	constructor: ProfiledItem,
 
 	start: function()
 	{
-		var ci = new JSP.CallInstance(this);
+		var ci = new CallInstance(this);
 		this.stack.push(ci);
 		this.calls.push(ci);
 		++this.count;
@@ -143,10 +129,10 @@ JSP.ProfiledItem.prototype = {
 	}
 };
 
-// JSP.Profiler stores the profile data for all functions/methods
+// JSProfiler stores the profile data for all functions/methods
 // it manages.
 
-JSP.Profiler = function()
+function JSProfiler()
 {
 	this.sectionMap = {};
 	this.profiledItemDict = {};
@@ -155,13 +141,13 @@ JSP.Profiler = function()
 	this.disabled = false;
 };
 
-JSP.Profiler.prototype = {
-	constructor: JSP.Profiler,
+JSProfiler.prototype = {
+	constructor: JSProfiler,
 
 	instrumentFunction: function(funcRef, label)
 	{
 		var self = this,
-			pi = new JSP.ProfiledItem(label),
+			pi = new ProfiledItem(label),
 			pf = function(){
 				var enabled = !self.disabled && !pi.disabled,
 					rv;
@@ -183,7 +169,7 @@ JSP.Profiler.prototype = {
 		// that are used as namespaces for other functionality.
 
 		for (prop in funcRef){
-			if (!JSP.funcPropExceptions[prop]){
+			if (!JSProfiler.funcPropExceptions[prop]){
 				pf[prop] = funcRef[prop];
 			}
 		}
@@ -219,7 +205,7 @@ JSP.Profiler.prototype = {
 			prop;
 
 		for (prop in obj){
-			if (!isFunc || !JSP.funcPropExceptions[prop]){
+			if (!isFunc || !JSProfiler.funcPropExceptions[prop]){
 				this.instrumentObjectFunction(obj, prop, objLabel + prop);
 			}
 		}
@@ -289,7 +275,7 @@ JSP.Profiler.prototype = {
 		var id = this.sectionMap[label],
 			pi = id ? this.profiledItemDict[id] : null;
 		if (!pi && canCreate){
-			pi = new JSP.ProfiledItem(label);
+			pi = new ProfiledItem(label);
 			this.profiledItemDict[pi.id] = pi;
 			this.sectionMap[label] = pi.id;
 		}
@@ -331,9 +317,28 @@ JSP.Profiler.prototype = {
 	}
 };
 
-window.$createProfiler = function()
-{
-	return new JSP.Profiler();
+JSProfiler.CallInstance = CallInstance;
+JSProfiler.ProfiledItem = ProfiledItem;
+
+JSProfiler.funcPropExceptions = {
+		"arguments":    true,
+		"arity":        true,
+		"caller":       true,
+		"constructor":  true,
+		"length":       true,
+		"name":         true,
+		"apply":        true,
+		"bind":         true,
+		"call":         true
 };
+
+// Expose the profiler class to the world.
+
+window.JSProfiler = JSProfiler;
+
+// Create and expose an instance of the profiler
+// so folks can hit the ground running.
+
+window.$profiler = new JSProfiler();
 
 })(window);
