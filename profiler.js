@@ -24,7 +24,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function( window ){
+(function( window ) {
 
 var nextProfiledItemId = 1,
 	nextCallInstanceId = 1;
@@ -45,27 +45,23 @@ function CallInstance( profiledItem )
 
 CallInstance.prototype = {
 	constructor: CallInstance,
-	startTimer: function()
-	{
+	startTimer: function() {
 		this.startTime = this.stopTime = this.currentTime();
 		this.duration = 0;
 	},
 
-	stopTimer: function()
-	{
+	stopTimer: function() {
 		this.stopTime = this.currentTime();
 		this.duration = this.stopTime - this.startTime;
 	},
 
-	currentTime: function()
-	{
+	currentTime: function() {
 		return ( new Date() ).getTime();
 	},
 	
-	addChild: function( child )
-	{
-		if ( child ){
-			if ( !this.children ){
+	addChild: function( child ) {
+		if ( child ) {
+			if ( !this.children ) {
 				this.children = [];
 			}
 			child.parent = this;
@@ -91,8 +87,7 @@ function ProfiledItem( label )
 ProfiledItem.prototype = {
 	constructor: ProfiledItem,
 
-	start: function()
-	{
+	start: function() {
 		var ci = new CallInstance( this );
 		this.stack.push( ci );
 		this.calls.push( ci );
@@ -103,8 +98,7 @@ ProfiledItem.prototype = {
 		return ci;
 	},
 
-	stop: function()
-	{
+	stop: function() {
 		var ci = this.stack.pop(),
 			duration;
 
@@ -144,18 +138,17 @@ function JSProfiler()
 JSProfiler.prototype = {
 	constructor: JSProfiler,
 
-	instrumentFunction: function( funcRef, label )
-	{
+	instrumentFunction: function( funcRef, label ) {
 		var self = this,
 			pi = new ProfiledItem( label ),
-			pf = function(){
+			pf = function() {
 				var enabled = !self.disabled && !pi.disabled,
 					rv;
-				if ( enabled ){
+				if ( enabled ) {
 					self._startFunction( pi, arguments );
 				}
 				rv = funcRef.apply( this, arguments );
-				if ( enabled ){
+				if ( enabled ) {
 					self._stopFunction( pi, arguments, rv );
 				}
 				return rv;
@@ -168,8 +161,8 @@ JSProfiler.prototype = {
 		// us to instrument constructors as well as functions
 		// that are used as namespaces for other functionality.
 
-		for ( prop in funcRef ){
-			if ( !JSProfiler.funcPropExceptions[ prop ] ){
+		for ( prop in funcRef ) {
+			if ( !JSProfiler.funcPropExceptions[ prop ] ) {
 				pf[ prop ] = funcRef[ prop ];
 			}
 		}
@@ -183,15 +176,14 @@ JSProfiler.prototype = {
 		return pf;
 	},
 
-	instrumentObjectFunction: function( obj, funcName, funcLabel )
-	{
+	instrumentObjectFunction: function( obj, funcName, funcLabel ) {
 		var pf = null,
 			funcRef;
 		obj = obj || window;
-		if ( obj && funcName ){
+		if ( obj && funcName ) {
 			funcLabel = funcLabel || funcName;
 			funcRef = obj[ funcName ];
-			if ( typeof funcRef === "function" ){
+			if ( typeof funcRef === "function" ) {
 				pf = this.instrumentFunction( funcRef, funcLabel );
 				obj[ funcName ] = pf;
 			}
@@ -199,45 +191,41 @@ JSProfiler.prototype = {
 		return pf;
 	},
 
-	instrumentObjectFunctions: function( obj, objLabel )
-	{
+	instrumentObjectFunctions: function( obj, objLabel ) {
 		var isFunc = typeof obj === "function",
 			prop;
 
-		for ( prop in obj ){
-			if ( !isFunc || !JSProfiler.funcPropExceptions[ prop ] ){
+		for ( prop in obj ) {
+			if ( !isFunc || !JSProfiler.funcPropExceptions[ prop ] ) {
 				this.instrumentObjectFunction( obj, prop, objLabel + prop );
 			}
 		}
 	},
 
-	startProfile: function( label )
-	{
-		if ( !this.disabled ){
+	startProfile: function( label ) {
+		if ( !this.disabled ) {
 			// XXX: Add observer hook.
 			var pi = this._getSectionProfiledItem( label, true );
-			if ( pi && !pi.disabled ){
+			if ( pi && !pi.disabled ) {
 				this._startCall( pi );
 			}
 		}
 	},
 
-	stopProfile: function( label )
-	{
-		if ( !this.disabled ){
+	stopProfile: function( label ) {
+		if ( !this.disabled ) {
 			// XXX: Add observer hook.
 			var pi = this._getSectionProfiledItem( label );
-			if ( pi && !pi.disabled ){
+			if ( pi && !pi.disabled ) {
 				this._stopCall( pi );
 			}
 		}
 	},
 
-	enable: function( id )
-	{
-		if ( id ){
+	enable: function( id ) {
+		if ( id ) {
 			var ci = this.profiledItemDict[ id ];
-			if ( ci ){
+			if ( ci ) {
 				ci.disable = false;
 			}
 		}
@@ -246,11 +234,10 @@ JSProfiler.prototype = {
 		}
 	},
 
-	disable: function( id )
-	{
-		if ( id ){
+	disable: function( id ) {
+		if ( id ) {
 			var ci = this.profiledItemDict[ id ];
-			if ( ci ){
+			if ( ci ) {
 				ci.disabled = true;
 			}
 		}
@@ -259,22 +246,20 @@ JSProfiler.prototype = {
 		}
 	},
 
-	reset: function()
-	{
+	reset: function() {
 		var dict = this.profiledItemDict,
 			k;
-		for ( k in dict ){
+		for ( k in dict ) {
 			dict[ k ].clear();
 		}
 		this.callGraphs.length = 0;
 		this.callStack.length = 0;
 	},
 
-	_getSectionProfiledItem: function( label, canCreate )
-	{
+	_getSectionProfiledItem: function( label, canCreate ) {
 		var id = this.sectionMap[ label ],
 			pi = id ? this.profiledItemDict[ id ] : null;
-		if ( !pi && canCreate ){
+		if ( !pi && canCreate ) {
 			pi = new ProfiledItem( label );
 			this.profiledItemDict[ pi.id ] = pi;
 			this.sectionMap[ label ] = pi.id;
@@ -282,13 +267,12 @@ JSProfiler.prototype = {
 		return pi;
 	},
 
-	_startCall: function( pi )
-	{
+	_startCall: function( pi ) {
 		var cs = this.callStack,
 			top = cs.length ? cs[ cs.length - 1 ] : null,
 			ci = pi.start();
 
-		if ( top ){
+		if ( top ) {
 			top.addChild( ci );
 		}
 		else {
@@ -298,22 +282,131 @@ JSProfiler.prototype = {
 		cs.push( ci );
 	},
 
-	_stopCall: function( pi )
-	{
+	_stopCall: function( pi ) {
 		pi.stop();
 		this.callStack.pop();
 	},
 
-	_startFunction: function( pi, args )
-	{
+	_startFunction: function( pi, args ) {
 		// XXX: Add observer hook.
 		this._startCall( pi );
 	},
 
-	_stopFunction: function( pi, args, rv )
-	{
+	_stopFunction: function( pi, args, rv ) {
 		// XXX: Add observer hook.
 		this._stopCall( pi );
+	},
+
+	_stringEscape: function( str ) {
+		return str.replace( /('|"|\\)/g, "\\$1" ).replace( /\n/, "\\n" ).replace( /\r/, "\\r" ).replace( /\t/, "\\t" );
+	},
+
+	//
+	// toJSON() returns a JSON string representation of the profiled
+	// data collected so far. The format looks like this:
+	//
+	//    {
+	//    	version: "0.1",
+	//    
+	//    	items: {
+	//    		"itemId": [ label, min, max, avg, total, count ],
+	//    		...
+	//    	},
+	//    
+	//    	calls: {
+	//    		"callId": [ itemId, duration, parentCallId, [ child1CallId, child2CallId, child3CallId ... ] ],
+	//    		...
+	//    	},
+	//    
+	//    	graphs: [ "callId", "callId", "callId", ... ]
+	//    }
+	//
+
+	toJSON: function() {
+		var output = [ '{"version": "0.1","useragent":"' + this._stringEscape(navigator.userAgent) + '","date":'+ ( new Date() ).getTime() +',"items":{' ],
+			itemDict = this.profiledItemDict,
+			graphs = this.callGraphs,
+			calls = [],
+			ca, cc, c, i, j, k, key, item, first = true;
+
+		first = true;
+		for ( k in itemDict ) {
+			item = itemDict[ k ];
+
+			if ( item.count > 0 ) {
+				if ( !first ) {
+					output.push( ',' );
+				} else {
+					first = false;
+				}
+				output.push( '"' + k + '":[' + '"' + this._stringEscape( item.label ) + '",' + item.min + ',' + item.max + ',' + ( Math.round( item.avg*100 ) / 100 ) + ',' + item.total + ',' + item.count + ']' );
+				if ( item.calls && item.calls.length ) {
+					calls.push( item.calls );
+				}
+			}
+		}
+
+		output.push( '},"calls":{' );
+		first = true;
+		for ( i = 0; i < calls.length; i++ ) {
+			ca = calls[ i ];
+			for ( j = 0; j < ca.length; j++ ) {
+				if ( !first ) {
+					output.push( ',' );
+				} else {
+					first = false;
+				}
+				c = ca[ j ];
+				cc = c.children;
+
+				output.push( '"' + c.id + '":["' + c.profiledItem.id + '",' + c.duration + ',' + ( c.parent ? '"' + c.parent.id + '"' : 'null' ) );
+				if ( cc && cc.length ) {
+					output.push( ',[' );
+					for ( k = 0; k < cc.length; k++ ) {
+						if ( k > 0 ) {
+							output.push( ',' );
+						}
+						output.push( '"' + cc[ k ].id + '"' );
+					}
+					output.push( ']' );
+				}
+				output.push( ']' );
+			}
+		}
+		output.push( '},"graphs":[' );
+		for (var i = 0; i < graphs.length; i++ ) {
+			if ( i > 0 ) {
+				output.push( ',' );
+			}
+			output.push( '"' + graphs[ i ].id + '"' );
+		}
+		output.push( ']}' );
+
+		return output.join( "" );
+	},
+
+	_createXHR: function() {
+		try { return new XMLHttpRequest(); } catch(e) {}
+		try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) {}
+		alert("XMLHttpRequest not supported");
+		return null;
+	},
+
+	postData: function( url, options ) {
+		var xhr = this._createXHR(),
+			opts = options || {};
+
+		xhr.open( 'post', url, true);
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+		xhr.onreadystatechange = function() {
+			if ( xhr.readyState == 4 && xhr.status == 200 ) {
+				if ( opts.success ) {
+					opts.success( xhr );
+				}
+			}
+		};
+
+		xhr.send( 'profile=' + encodeURIComponent( this.toJSON() ) );
 	}
 };
 
