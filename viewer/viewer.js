@@ -29,26 +29,40 @@ function escapeEntities( str )
 	return str.replace( /</g, "&lt;" ).replace( />/, "&gt;" ).replace( /&/, "&amp;" );
 }
 
-function generateCallTable( profile )
+function generateCallTable( profile, sortBy )
 {
 	var items = profile.items,
 		filtered = [],
-		output = [ '<table id="item-table" border="1" cellspacing="0" cellpadding="4"><tr><th>Count</th><th>Min</th><th>Max</th><th>Avg</th><th>Total</th><th>Label</th></tr>' ],
+		callCount = 0,
 		item, i, k;
+
+    sortBy = sortBy || 'max';
+
+    var sortIndex = {
+                label: 0,
+                min: 1,
+                max: 2,
+                avg: 3,
+                total: 4,
+                count: 5
+            }[ sortBy ];
 
 	for ( k in items ) {
 		item = items[ k ];
 		item.id = k;
 		if ( item[ 5 ] != 0 ) {
 			filtered.push( item );
+            callCount += item[ 5 ];
 		}
 	}
 
 	filtered = filtered.sort( function( a, b ) {
-		a = a[ 2 ];
-		b = b[ 2 ];
+		a = a[ sortIndex ];
+		b = b[ sortIndex ];
 		return ( a > b ) ? -1 : ( ( a < b ) ? 1 : 0);
 	});
+
+	var output = [ '<p>Total Call Count: ' + callCount + '</p><table id="item-table" border="1" cellspacing="0" cellpadding="4"><tr><th class="count">Count</th><th class="min">Min</th><th class="max">Max</th><th class="avg">Avg</th><th class="total">Total</th><th class="label">Label</th></tr>' ];
 
 	for ( i = 0; i < filtered.length; i++ ) {
 		item = filtered[ i ];
@@ -167,6 +181,11 @@ function setUpPage( profile )
 	$( "#date span" ).text( profile.date ? escapeEntities( ( new Date( profile.date ) ).toLocaleString() ) : "Not Specified" );
 	generateCallTable( profile );
 	generateGraphs( profile );
+
+    $( '#items' ).on( 'click', 'th', function( e ) {
+	        generateCallTable( profile, this.className );
+            return false;
+        });
 }
 
 window.setUpPage = setUpPage;

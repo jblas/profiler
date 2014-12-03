@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Profile Viewer</title>
 <link href="viewer.css" rel="stylesheet" type="text/css">
-<script src="http://code.jquery.com/jquery-1.6.4.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script src="viewer.js"></script>
 <script>
 $(function() {
