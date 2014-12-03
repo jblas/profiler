@@ -154,6 +154,7 @@ function Profiler()
 
 Profiler.prototype = {
 	constructor: Profiler,
+	funcPropExceptions: funcPropExceptions,
 
 	instrumentFunction: function(funcRef, label)
 	{
@@ -216,6 +217,42 @@ Profiler.prototype = {
 			}
 		}
 	},
+
+    hasFunctionsForInstrumenting: function( obj )
+    {
+        for ( var key in obj ) {
+            if ( typeof obj[ key ] === 'function' && !funcPropExceptions[ key ] ) {
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    instrumentObjectDeep: function( obj, label )
+    {
+        for ( var prop in obj ) {
+            var propType = typeof obj[ prop ];
+            if ( propType === 'function' && !obj[ prop ].__instrumented__ ) {
+                obj[ prop ].__instrumented__  = true;
+                this.instrumentObjectFunction( obj, prop, label + prop );
+
+                // Check if we should instrument the function's prototype.
+                if ( this.hasFunctionsForInstrumenting( obj[ prop ].prototype ) ) {
+                    this.instrumentObjectDeep( obj[ prop ].prototype, label + prop + '.' );
+                }
+
+                // Check if we should instrument any functions properties
+                // that are set directly on the function.
+
+                if ( this.hasFunctionsForInstrumenting( obj[ prop ] ) ) {
+                    this.instrumentObjectDeep( obj[ prop ], label + prop + '.' );
+                }
+            } else if ( propType === 'object' ) {
+                this.instrumentObjectDeep( obj[ prop ], label + prop + '.' );
+            }
+        }
+    },
 
 	startProfile: function(label)
 	{
